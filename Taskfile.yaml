@@ -1,0 +1,57 @@
+# -*- coding: utf-8 -*-
+
+  # #   ######   #####  #     #  #####   #####  
+  # #   #     # #     #  #   #  #     # #     # 
+####### #     # #         # #         #       # 
+  # #   ######  #          #     #####   #####  
+####### #     # #         # #   #       #       
+  # #   #     # #     #  #   #  #       #       
+  # #   ######   #####  #     # ####### #######
+
+# author: Thomas.Hochstrasser@zf.com
+
+# taskfile: https://taskfile.dev
+
+version: "3"
+
+
+tasks:
+  install:ecal_carla:
+    desc: Install deps 1-example-hello-carla.
+    dir: ./
+    cmds:
+      - ./python/3_7_3/python.exe -m pip install poetry
+      - ./python/3_7_3/python.exe -m poetry install
+  
+  run:ecal_carla:
+    desc: Runs the best ecal carla API in the world
+    dir: ./
+    deps: ['install:ecal_carla']
+    cmds:
+      - ./.venv/Scripts/python.exe ecal_carla/main.py --sync
+  
+  sim:stop:
+    desc: Stops any running carla simulation instance.
+    dir: ./
+    cmds:
+      - python run_simulator.py --simulator carla --action stop
+
+  sim:run:
+    desc: Starts a new carla simulation instance.
+    dir: ./
+    cmds:
+      - python run_simulator.py --simulator carla --action run
+
+  default:
+    desc: Lists all possible tasks
+    cmds:
+      - echo -e "\033[32mNo default task is set please use task --list\033[0m"
+      - echo -e "Calling it for you now ;)\n"
+      - task --list
+    silent: true
+  vscode:open:
+    desc: Open Visual Studio Code
+    dir: ./vscode
+    cmds:
+      - explorer code.exe .
+    ignore_error: true

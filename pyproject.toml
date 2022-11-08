@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "hello-carla"
+version = "0.1.0"
+description = "Example project showing how to connect to the simulator"
+authors = ["Thomas Hochstrasser <thomas.hochstrasser@zf.com>"]
+readme = "README.md"
+packages = [{include = "ecal_carla"}]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+carla = { path = "./carla/PythonAPI/carla/dist/carla-0.9.13-cp37-cp37m-win_amd64.whl" }
+pygame = "^2.1.2"
+numpy = "1.18.4"
+shapely = "^1.8.5.post1"
+networkx = "2.6.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
