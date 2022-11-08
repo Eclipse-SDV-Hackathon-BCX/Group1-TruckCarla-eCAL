@@ -20,6 +20,7 @@ tasks:
     desc: Install deps 1-example-hello-carla.
     dir: ./
     cmds:
+      - ./python/3_7_3/python.exe -m poetry lock
       - ./python/3_7_3/python.exe -m pip install poetry
       - ./python/3_7_3/python.exe -m poetry install
   
@@ -29,6 +30,13 @@ tasks:
     deps: ['install:ecal_carla']
     cmds:
       - ./.venv/Scripts/python.exe ecal_carla/main.py --sync
+      
+  run:ecal_carla_fullscreen:
+    desc: Runs the best ecal carla API in the world
+    dir: ./
+    deps: ['install:ecal_carla']
+    cmds:
+      - ./.venv/Scripts/python.exe ecal_carla/main.py --sync --fullscreen
   
   sim:stop:
     desc: Stops any running carla simulation instance.

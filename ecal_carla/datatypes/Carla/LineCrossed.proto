@@ -1,0 +1,30 @@
+syntax = "proto2";
+
+package pb.Carla;
+
+import "header.proto";
+import "SensorNearData/SensorStates.proto";
+
+
+message LineCrossed
+{
+    message Errs
+    {
+        optional  pb.SensorStates   line_crossed           =  2 [default = STATE_FAULT];  ////
+    }
+
+    message Signals
+    {
+        optional  bool              line_crossed           =  3 [default = false];  ///
+    }
+
+    message Timestamp
+    {
+        optional  sint64	line_crossed                     =  2;    /// [us]
+    }
+
+    optional  pb.Header             header                  =  1;                  /// common message header, timestamp
+    optional  Errs                  errs                    =  3;                  ///
+    optional  Signals               signals                 =  4;                  ///
+    optional  Timestamp             timestamps              =  6;                  ///
+}
