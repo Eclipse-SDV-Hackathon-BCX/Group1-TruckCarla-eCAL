@@ -113,7 +113,7 @@ class eCAL_Interface:
 		self.brake = 42 # 0 = off,  1= on, 42 = init
 		self.steering = 0 # 0= init, 0.4 = left_max, -0.4 = right_max
 		self.steering_tux = 42 #42 = init, 0= neutral, 1 = left, -1 = right
-
+		self.messageTimestamps = {}
 		def brake_cb(topic_name, msg, time):
 			global eCAL_Command
 			if msg.signals.is_brake_applied == True:
@@ -137,6 +137,13 @@ class eCAL_Interface:
 		sub_steering.set_callback(steering_cb)
 
 	def sendMessage(self, message):
+		timestamp = ecal_core.getmicroseconds()[1]
+		if message not in self.messageTimestamps:
+			self.messageTimestamps[message] = timestamp
+		if (timestamp - self.messageTimestamps[message])/1000000 < 1:
+			self.messageTimestamps[message] = timestamp
+			return
+		self.messageTimestamps[message] = timestamp
 		self._pub.send(message)
 
 	def destroy(self):
@@ -818,7 +825,7 @@ class LaneInvasionSensor(object):
 		for crossed in event.crossed_lane_markings:
 			if crossed.type in [carla.LaneMarkingType.SolidSolid, carla.LaneMarkingType.Solid]:
 				self.hud.notification('Crossed line %s' % crossed.type)
-				eCAL_Command.sendMessage('Crossed Line')
+				eCAL_Command.sendMessage('Crossed line %s' % crossed.type)
 
 # ==============================================================================
 # -- GnssSensor --------------------------------------------------------
