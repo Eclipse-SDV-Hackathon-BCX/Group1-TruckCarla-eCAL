@@ -103,6 +103,10 @@ from datatypes_python.HMI import HMICanKeyboard_pb2
 from datatypes_python.SensorNearData import Brake_pb2
 from datatypes_python.SensorNearData import VehicleDynamics_pb2
 
+from ecal.core.publisher import StringPublisher
+
+import ecal.core.core as ecal_core
+
 
 class eCAL_Interface:
 	def __init__(self):
@@ -123,6 +127,7 @@ class eCAL_Interface:
 			global eCAL_Command
 			eCAL_Command.steering = msg.signals.steering_wheel_angle
 		ecal_core.initialize(sys.argv, "carla")
+		self._pub = StringPublisher("Carla")
 
 		#sub_hmican = ProtoSubscriber("HmiCanKeyboardStatePb", HMICanKeyboard_pb2.HmiCanKeyboardState)
 		#sub_hmican.set_callback(can_callback)
@@ -130,8 +135,9 @@ class eCAL_Interface:
 		sub_brake.set_callback(brake_cb)
 		sub_steering = ProtoSubscriber("VehicleDynamicsInPb", VehicleDynamics_pb2.VehicleDynamics)
 		sub_steering.set_callback(steering_cb)
-	def sendMessage(self):
-		pass
+
+	def sendMessage(self, message):
+		self._pub.send(message)
 
 	def destroy(self):
 		ecal_core.finalize()
@@ -774,6 +780,7 @@ class CollisionSensor(object):
 			return
 		actor_type = get_actor_display_name(event.other_actor)
 		self.hud.notification('Collision with %r' % actor_type)
+		eCAL_Command.sendMessage('Crashed')
 		impulse = event.normal_impulse
 		intensity = math.sqrt(impulse.x ** 2 + impulse.y ** 2 + impulse.z ** 2)
 		self.history.append((event.frame, intensity))
@@ -808,8 +815,10 @@ class LaneInvasionSensor(object):
 		if not self:
 			return
 		lane_types = set(x.type for x in event.crossed_lane_markings)
-		text = ['%r' % str(x).split()[-1] for x in lane_types]
-		self.hud.notification('Crossed line %s' % ' and '.join(text))
+		for crossed in event.crossed_lane_markings:
+			if crossed.type in [carla.LaneMarkingType.SolidSolid, carla.LaneMarkingType.Solid]:
+				self.hud.notification('Crossed line %s' % crossed.type)
+				eCAL_Command.sendMessage('Crossed Line')
 
 # ==============================================================================
 # -- GnssSensor --------------------------------------------------------
