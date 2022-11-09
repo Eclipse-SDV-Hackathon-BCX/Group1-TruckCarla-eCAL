@@ -27,14 +27,12 @@ tasks:
   run:ecal_carla:
     desc: Runs the best ecal carla API in the world
     dir: ./
-    deps: ['install:ecal_carla']
     cmds:
       - ./.venv/Scripts/python.exe ecal_carla/main.py --sync
       
   run:ecal_carla_fullscreen:
     desc: Runs the best ecal carla API in the world
     dir: ./
-    deps: ['install:ecal_carla']
     cmds:
       - ./.venv/Scripts/python.exe ecal_carla/main.py --sync --fullscreen
   
@@ -49,6 +47,12 @@ tasks:
     dir: ./
     cmds:
       - python run_simulator.py --simulator carla --action run
+
+  throttle:run:
+    desc: Starts the throttle publisher
+    dir: ./
+    cmds:
+      - python ecal_carla/Serial_Throttle_Publisher.py
 
   default:
     desc: Lists all possible tasks
