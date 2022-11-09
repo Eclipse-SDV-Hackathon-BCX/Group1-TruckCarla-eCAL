@@ -1233,6 +1233,7 @@ def game_loop(args):
 	pygame.font.init()
 	world = None
 	traffic = None
+	
 
 	try:
 		if args.seed:
