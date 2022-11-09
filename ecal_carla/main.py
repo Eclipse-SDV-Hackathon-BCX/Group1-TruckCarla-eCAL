@@ -102,6 +102,7 @@ sys.path.insert(1, os.path.join(sys.path[0], 'datatypes_python'))
 from datatypes_python.HMI import HMICanKeyboard_pb2
 from datatypes_python.SensorNearData import Brake_pb2
 from datatypes_python.SensorNearData import VehicleDynamics_pb2
+from ecal.core.subscriber import StringSubscriber
 
 from ecal.core.publisher import StringPublisher
 
@@ -114,6 +115,7 @@ class eCAL_Interface:
 		self.steering = 0 # 0= init, 0.4 = left_max, -0.4 = right_max
 		self.steering_tux = 42 #42 = init, 0= neutral, 1 = left, -1 = right
 		self.messageTimestamps = {}
+		self.throttle = 0  # 0 = zero, 1=full
 		def brake_cb(topic_name, msg, time):
 			global eCAL_Command
 			if msg.signals.is_brake_applied == True:
@@ -126,8 +128,15 @@ class eCAL_Interface:
 		def steering_cb(topic_name, msg , time):
 			global eCAL_Command
 			eCAL_Command.steering = msg.signals.steering_wheel_angle
+
+		
+		def throttle_cb(topic_name, msg, time):
+			global eCAL_Command
+			eCAL_Command.throttle = float(msg)
+		
 		ecal_core.initialize(sys.argv, "carla")
 		self._pub = StringPublisher("Carla")
+		self._velpub = StringPublisher("Velocity")
 
 		#sub_hmican = ProtoSubscriber("HmiCanKeyboardStatePb", HMICanKeyboard_pb2.HmiCanKeyboardState)
 		#sub_hmican.set_callback(can_callback)
@@ -135,6 +144,8 @@ class eCAL_Interface:
 		sub_brake.set_callback(brake_cb)
 		sub_steering = ProtoSubscriber("VehicleDynamicsInPb", VehicleDynamics_pb2.VehicleDynamics)
 		sub_steering.set_callback(steering_cb)
+		sub_throttle = StringSubscriber("SerialThrottleString")
+		sub_throttle.set_callback(throttle_cb)
 
 	def sendMessage(self, message):
 		timestamp = ecal_core.getmicroseconds()[1]
@@ -145,6 +156,8 @@ class eCAL_Interface:
 			return
 		self.messageTimestamps[message] = timestamp
 		self._pub.send(message)
+	def sendVelocity(self, message):
+		self._velpub.send(message)
 
 	def destroy(self):
 		ecal_core.finalize()
@@ -1233,7 +1246,7 @@ def game_loop(args):
 	pygame.font.init()
 	world = None
 	traffic = None
-	
+
 
 	try:
 		if args.seed:
@@ -1284,9 +1297,12 @@ def game_loop(args):
 			world.render(display)
 			pygame.display.flip()
 			if(eCAL_Command.brake != 42):
-				control.throttle = eCAL_Command.brake
+				control.throttle = eCAL_Command.throttle
+				control.brake = eCAL_Command.brake
 				control.steer = -eCAL_Command.steering
 			world.player.apply_control(control)
+			eCAL_Command.sendVelocity(str(world.player.get_velocity().length()))
+			
 
 	finally:
 
